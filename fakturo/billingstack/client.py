@@ -1,8 +1,13 @@
+import logging
 import requests
 from urlparse import urlparse
 
 from fakturo.core import exceptions
+from fakturo.core import utils
 from fakturo.billingstack.controller import Merchant
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Client(object):
@@ -16,7 +21,7 @@ class Client(object):
 
         headers = {'Content-Type': 'application/json'}
 
-        hooks = dict(args=_ensure_url_hook)
+        hooks = dict(args=_ensure_url_hook, pre_request=utils.log_request)
         self.requests = requests.session(
             headers=headers,
             hooks=hooks

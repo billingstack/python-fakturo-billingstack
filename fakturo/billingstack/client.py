@@ -14,8 +14,11 @@ class Client(object):
             if not url_.scheme:
                 args['url'] = url + url_.path
 
+        headers = {'Content-Type': 'application/json'}
+
         hooks = dict(args=_ensure_url_hook)
         self.requests = requests.session(
+            headers=headers,
             hooks=hooks
         )
 

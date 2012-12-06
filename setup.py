@@ -43,16 +43,10 @@ setup(
     tests_require=tests_require,
     extras_require={'test': tests_require},
     dependency_links=dependency_links,
-    scripts=[
-        'bin/fakturo',
-    ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
-        [fakturo.providers]
-        billingstack = fakturo_billingstack.client:Client
-
-        [fakturo.cmd.billingstack]
-        merchant-create = fakturo.
+        [fakturo.provider]
+        billingstack = fakturo.billingstack.provider:BillingStackProvider
     """),
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -4,7 +4,7 @@ from urlparse import urlparse
 
 from fakturo.core import exceptions
 from fakturo.core import utils
-from fakturo.billingstack.controller import Merchant
+from fakturo.billingstack.controller import Customer, Merchant
 
 
 LOG = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ class Client(object):
             hooks=hooks
         )
 
+        self.customer = Customer(self)
         self.merchant = Merchant(self)
 
     def wrap_api_call(self, func, *args, **kw):
@@ -36,8 +37,15 @@ class Client(object):
         :param func: The function to wrap
         """
         response = func(*args, **kw)
+        import ipdb
+        ipdb.set_trace()
         if response.status_code != 200:
-            error = response.json.get('error', 'Ooops')
+            error = None
+
+            if response.json:
+                error = response.json.get('error', None)
+            if not error:
+                error = 'Remote errorcode %i' % response.status_code
             raise exceptions.RemoteError(error)
         return response
 

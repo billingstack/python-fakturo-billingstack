@@ -47,7 +47,7 @@ project = u'python-fakturo-billingstack'
 # built documents.
 #
 # The short X.Y version.
-from fakturo.billinstack.version import version_info as fakturo_version
+from fakturo.billingstack.version import version_info as fakturo_version
 version = fakturo_version.canonical_version_string()
 # The full version, including alpha/beta/rc tags.
 release = fakturo_version.version_string_with_vcs()

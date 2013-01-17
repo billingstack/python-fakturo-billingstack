@@ -184,6 +184,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'python-fakturo-billingstack.tex', u'Fakturo Billingstack Client Documentation',
+   u'Bouvet ASA', 'manual')
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -213,6 +214,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'python-fakturo-billingstack', u'Fakturo Billingstack Client Documentation',
+     [u'Bouvet ASA'], 1)
 ]
 
 # If true, show URL addresses after external links.

@@ -38,7 +38,7 @@ class Customer(Base):
         return response.json
 
     def get(self, merchant_id, id_):
-        response = self.client.get('/%s/customers/%s' % merchant_id, id_)
+        response = self.client.get('/%s/customers/%s' % (merchant_id, id_))
         return response.json
 
     def update(self, merchant_id, id_, values):

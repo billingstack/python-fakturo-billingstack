@@ -81,6 +81,7 @@ class CommandApi(object):
     @staticmethod
     def customer_get_parser(parser):
         parser.add_argument('merchant_id')
+        parser.add_argument('id')
 
     def customer_get(self, parsed_args, command):
         return self.client.customer.get(parsed_args.merchant_id, parsed_args.id)

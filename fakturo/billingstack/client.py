@@ -37,8 +37,6 @@ class Client(object):
         :param func: The function to wrap
         """
         response = func(*args, **kw)
-        import ipdb
-        ipdb.set_trace()
         if response.status_code != 200:
             error = None
 

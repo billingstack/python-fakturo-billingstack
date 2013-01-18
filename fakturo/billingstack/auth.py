@@ -4,18 +4,17 @@ import simplejson as json
 import requests
 from requests.auth import AuthBase
 
-from fakturo.core import exceptions, utils
+from fakturo.core import client, exceptions
 
 
 LOG = logging.getLogger(__name__)
 
 
-class AuthHelper(AuthBase):
+class AuthHelper(AuthBase, client.BaseClient):
     def __init__(self, url, username=None, password=None, merchant=None):
         self.url = url
 
-        hooks = dict(pre_request=utils.log_request)
-        self.requests = requests.session(hooks=hooks)
+        self.requests = self.get_requests()
 
         self.auth_info = {}
 
@@ -52,11 +51,5 @@ class AuthHelper(AuthBase):
 
     def refresh_auth(self):
         LOG.debug('Authenticating on URL %s info %s' % (self.url, self.creds))
-        response = self.requests.post(self.url + '/authenticate',
-                                      data=json.dumps(self.creds))
-        if response.status_code != 200:
-            error = response.json.get('error', None)
-            if not error:
-                error = 'Remote error occured. Response Body:\n%s' % response.content
-            raise exceptions.RemoteError(response.status_code, error)
+        response = self.post('/authenticate', data=json.dumps(self.creds))
         self.auth_info.update(response.json)

@@ -2,10 +2,6 @@ class CommandApi(object):
     def __init__(self, client):
         self.client = client
 
-    @classmethod
-    def _add_id(cls, parser):
-        parser.add_argument('id')
-
     # Merchant commands
     @staticmethod
     def merchant_create_parser(parser):

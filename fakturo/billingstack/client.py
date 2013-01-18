@@ -27,9 +27,10 @@ class Client(object):
             hooks=hooks
         )
 
-        for cls in controller.__all__:
-            name = cls.get_name()
-            print name
+        ctrls = controller.__all__
+        LOG.debug('Loading Controllers: %s' % [c.get_name() for c in ctrls])
+
+        for cls in ctrls:
             setattr(self, cls.get_name(), cls(self))
 
     def wrap_api_call(self, func, *args, **kw):

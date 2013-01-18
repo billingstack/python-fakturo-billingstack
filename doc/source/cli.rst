@@ -32,4 +32,4 @@ Commands
    :maxdepth: 2
    :glob:
 
-   rest/*
+   cli/*

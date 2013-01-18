@@ -1,10 +1,9 @@
 import logging
 import simplejson as json
 
-import requests
 from requests.auth import AuthBase
 
-from fakturo.core import client, exceptions
+from fakturo.core import client
 
 
 LOG = logging.getLogger(__name__)
@@ -12,9 +11,7 @@ LOG = logging.getLogger(__name__)
 
 class AuthHelper(AuthBase, client.BaseClient):
     def __init__(self, url, username=None, password=None, merchant=None):
-        self.url = url
-
-        self.requests = self.get_requests()
+        super(AuthHelper, self).__init__(url)
 
         self.auth_info = {}
 

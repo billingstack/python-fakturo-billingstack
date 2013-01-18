@@ -108,4 +108,79 @@ class CommandApi(object):
         parser.add_argument('id')
 
     def customer_delete(self, parsed_args, command):
-        return self.client.customer.delete(parsed_args.id, parsed_args.merchant_id)
+        return self.client.customer.delete(parsed_args.merchant_id, parsed_args.id)
+
+    # Product commands
+    @staticmethod
+    def product_create_parser(parser):
+        parser.add_argument('merchant_id')
+        parser.add_argument('name')
+        parser.add_argument('type')
+        parser.add_argument('measure')
+        parser.add_argument('--title')
+        parser.add_argument('--description')
+
+    def product_create(self, parsed_args, command):
+        values = dict(
+            name=parsed_args.name,
+            type=parsed_args.type,
+            measure=parsed_args.measure,
+            title=parsed_args.title,
+            description=parsed_args.description
+        )
+        return self.client.product.create(values)
+
+    @staticmethod
+    def product_list_parser(parser):
+        parser.add_argument('merchant_id')
+
+    def product_list(self, parsed_args, command):
+        return self.client.product.list(parsed_args.merchant_id)
+
+    @staticmethod
+    def product_get_parser(parser):
+        parser.add_argument('merchant_id')
+        parser.add_argument('id')
+
+    def product_get(self, parsed_args, command):
+        """
+        Fetch a product
+        """
+        return self.client.product.get(parsed_args.merchant_id, parsed_args.id)
+
+    @staticmethod
+    def product_update_parser(parser):
+        parser.add_argument('merchant_id')
+        parser.add_argument('id')
+        parser.add_argument('--name')
+        parser.add_argument('--type')
+        parser.add_argument('--measure')
+        parser.add_argument('--title')
+        parser.add_argument('--description')
+
+    def product_update(self, parsed_args, command):
+        """
+        Update a product
+        """
+        values = dict(
+            name=parsed_args.name,
+            type=parsed_args.type,
+            measure=parsed_args.measure,
+            title=parsed_args.title,
+            description=parsed_args.description
+        )
+        return self.client.product.update(
+            parsed_args.merchant_id,
+            parsed_args.id,
+            values)
+
+    @staticmethod
+    def product_delete_parser(parser):
+        parser.add_argument('merchant_id')
+        parser.add_argument('id')
+
+    def product_delete(self, parsed_args, command):
+        """
+        Update a product
+        """
+        return self.client.product.delete(parsed_args.merchant_id, parsed_args.id)

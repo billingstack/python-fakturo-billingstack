@@ -4,7 +4,7 @@ from urlparse import urlparse
 
 from fakturo.core import exceptions
 from fakturo.core import utils
-from fakturo.billingstack.controller import Customer, Merchant
+from fakturo.billingstack.controller import Customer, Merchant, Product
 
 
 LOG = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class Client(object):
 
         self.customer = Customer(self)
         self.merchant = Merchant(self)
+        self.product = Product(self)
 
     def wrap_api_call(self, func, *args, **kw):
         """

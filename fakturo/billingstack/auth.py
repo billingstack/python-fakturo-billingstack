@@ -25,21 +25,13 @@ class AuthHelper(AuthBase, client.BaseClient):
 
         self.cred_info = cred_info
 
-        if self.creds_valid:
+        if self.cred_valid:
             self.refresh_auth()
 
     @property
-    def creds_valid(self):
+    def cred_valid(self):
         c = self.cred_info
         return True if c.get('username') and c.get('password') else False
-
-    @property
-    def merchant(self):
-        return self.cred_info.get('merchant')
-
-    @property
-    def endpoint(self):
-        return self.auth_info.get('endpoint')
 
     def get_token_key(self, key):
         """
@@ -54,8 +46,20 @@ class AuthHelper(AuthBase, client.BaseClient):
     def token(self):
         return self.get_token_key('id')
 
+    @property
+    def endpoint(self):
+        return self.auth_info.get('endpoint')
+
+    @property
+    def merchant(self):
+        return self.auth_info.get('merchant')
+
+    @property
+    def customer(self):
+        return self.auth_info.get('customre')
+
     def __call__(self, request):
-        if not self.token and self.creds_valid:
+        if not self.token and self.cred_valid:
             self.refresh_auth()
         request.headers['X-Auth-Token'] = self.token
         return request

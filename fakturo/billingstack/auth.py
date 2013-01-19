@@ -15,23 +15,27 @@ class AuthHelper(AuthBase, client.BaseClient):
 
         self.auth_info = {}
 
-        self.username = username
-        self.password = password
-        self.merchant = merchant
+        cred_info = {
+            'username': username,
+            'password': password,
+        }
+
+        if merchant:
+            cred_info['merchant'] = merchant
+
+        self.cred_info = cred_info
 
         if self.creds_valid:
             self.refresh_auth()
 
     @property
-    def creds(self):
-        creds = dict(username=self.username, password=self.password)
-        if self.merchant:
-            creds['merchant'] = self.merchant
-        return creds
+    def creds_valid(self):
+        creds = self.cred_info
+        return True if ('username' in creds and 'password' in creds) else False
 
     @property
-    def creds_valid(self):
-        return True if (self.username and self.password) else False
+    def merchant_valid(self):
+        return True if 'merchant' in self.cred_info else False
 
     @property
     def endpoint(self):
@@ -57,6 +61,6 @@ class AuthHelper(AuthBase, client.BaseClient):
         return request
 
     def refresh_auth(self):
-        LOG.debug('Authenticating on URL %s info %s' % (self.url, self.creds))
-        response = self.post('/authenticate', data=json.dumps(self.creds))
+        LOG.debug('Authenticating on URL %s info %s' % (self.url, self.cred_info))
+        response = self.post('/authenticate', data=json.dumps(self.cred_info))
         self.auth_info.update(response.json)

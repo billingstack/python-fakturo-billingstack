@@ -10,18 +10,21 @@ LOG = logging.getLogger(__name__)
 
 
 class AuthHelper(AuthBase, client.BaseClient):
-    def __init__(self, url, username=None, password=None, merchant=None):
+    def __init__(self, url, username=None, password=None,
+                 merchant_name=None, customer_name=None):
         super(AuthHelper, self).__init__(url)
 
         self.auth_info = {}
 
+        if not merchant_name and customer_name:
+            raise ValueError('Customer set but not Merchant')
+
         cred_info = {
             'username': username,
             'password': password,
+            'merchant': merchant_name,
+            'customer': customer_name
         }
-
-        if merchant:
-            cred_info['merchant'] = merchant
 
         self.cred_info = cred_info
 
@@ -56,7 +59,7 @@ class AuthHelper(AuthBase, client.BaseClient):
 
     @property
     def customer(self):
-        return self.auth_info.get('customre')
+        return self.auth_info.get('customer')
 
     def __call__(self, request):
         if not self.token and self.cred_valid:
@@ -66,5 +69,6 @@ class AuthHelper(AuthBase, client.BaseClient):
 
     def refresh_auth(self):
         LOG.debug('Authenticating on URL %s info %s' % (self.url, self.cred_info))
-        response = self.post('/authenticate', data=json.dumps(self.cred_info))
+        auth_data = dict([(k, v) for k, v in self.cred_info.items() if v])
+        response = self.post('/authenticate', data=json.dumps(auth_data))
         self.auth_info.update(response.json)

@@ -74,6 +74,8 @@ class Base(object):
         """
         Return the collection URL for this Controller
         """
+        import ipdb
+        ipdb.set_trace()
         return self.get_url()
 
     @classmethod
@@ -84,42 +86,49 @@ class Base(object):
         return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r'_\1',
                       cls.__name__).lower()
 
-    def _wrap_api_call(self, func, url_string, url_data, *args, **kw):
-        url = url_string % url_data
-        LOG.debug('URL formatted to: %s' % url)
+    def _wrap_api_call(self, func, url, url_data=None, *args, **kw):
+        if url_data:
+            url = url % url_data
+            LOG.debug('URL formatted to: %s' % url)
         response = func(url, *args, **kw)
         return response
 
-    def _create(self, url_data, values):
-        response = self._wrap_api_call(self.client.post, self.collection_url,
-                                       url_data, data=json.dumps(values))
+    def _create(self, values, *args, **kw):
+        url = kw.pop('url', self.collection_url)
+        response = self._wrap_api_call(
+            self.client.post, url, data=json.dumps(values), *args, **kw)
         return response
 
-    def _list(self, url_data):
-        response = self._wrap_api_call(self.client.get, self.collection_url,
-                                       url_data)
+    def _list(self, *args, **kw):
+        url = kw.pop('url', self.collection_url)
+        response = self._wrap_api_call(
+            self.client.get, url, *args, **kw)
         return response
 
-    def _get(self, url_data):
-        response = self._wrap_api_call(self.client.get, self.item_url, url_data)
+    def _get(self, *args, **kw):
+        url = kw.pop('url', self.item_url)
+        response = self._wrap_api_call(
+            self.client.get, url, *args, **kw)
         return response
 
-    def _upate(self, url_data, values):
-        response = self._wrap_api_call(self.client.update, self.item_url,
-                                       url_data, data=json.dumps(values))
+    def _upate(self, values, *args, **kw):
+        url = kw.pop('url', self.item_url)
+        response = self._wrap_api_call(
+            self.client.update, url, data=json.dumps(values), *args, **kw)
         return response
 
-    def _delete(self, url_data):
-        response = self._wrap_api_call(self.client.delete, self.item_url,
-                                       url_data)
+    def _delete(self, *args, **kw):
+        url = kw.pop('url', self.item_url)
+        response = self._wrap_api_call(
+            self.client.delete, url, *args, **kw)
         return response
 
 
 class Merchant(Base):
-    url = '/%(merchant_id)s'
+    url = '/merchants'
 
     def create(self, values):
-        return self._create(locals(), values).json
+        return self.create(locals(), values).json
 
     def list(self):
         return self._list(locals()).json

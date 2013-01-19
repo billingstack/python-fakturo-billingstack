@@ -11,9 +11,9 @@ LOG = logging.getLogger(__name__)
 class Client(client.BaseClient):
     def __init__(self, url=None, username=None, password=None, merchant=None):
         super(Client, self).__init__(url)
-        auth_helper = auth.AuthHelper(url, username=username, password=password,
-                                      merchant=merchant)
-        self.requests.auth = auth_helper
+
+        self.requests.auth = auth.AuthHelper(
+            url, username=username, password=password, merchant=merchant)
 
         ctrls = controller.__all__
         LOG.debug('Loading Controllers: %s' % [c.get_name() for c in ctrls])
@@ -27,10 +27,8 @@ class Client(client.BaseClient):
 
         :param func: The function to wrap
         """
-        merchant = self.requests.auth.auth_info.get('merchant', None)
-        if merchant:
-            path = '/' + merchant['id'] + path
+        auth_merchant = self.requests.auth.auth_info.get('merchant', None)
+        if self.requests.auth.merchant_valid:
+            path = '/' + auth_merchant['id'] + path
         response = super(Client, self).wrap_api_call(func, path, *args, **kw)
         return response
-
-

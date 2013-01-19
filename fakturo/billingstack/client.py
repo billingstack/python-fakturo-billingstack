@@ -21,21 +21,16 @@ class Client(client.BaseClient):
         for cls in ctrls:
             setattr(self, cls.get_name(), cls(self))
 
-    def wrap_api_call(self, func, *args, **kw):
+    def wrap_api_call(self, func, path, *args, **kw):
         """
         Wrap a self.<rest function> with exception handling
 
         :param func: The function to wrap
         """
-        response = func(*args, **kw)
-        if response.status_code != 200:
-            error = None
-
-            if response.json:
-                error = response.json.get('error', None)
-            if not error:
-                error = 'Remote errorcode %i' % response.status_code
-            raise exceptions.RemoteError(error)
+        merchant = self.requests.auth.auth_info.get('merchant', None)
+        if merchant:
+            path = '/' + merchant['id'] + path
+        response = super(Client, self).wrap_api_call(func, path, *args, **kw)
         return response
 
 

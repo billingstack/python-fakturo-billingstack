@@ -30,16 +30,16 @@ class AuthHelper(AuthBase, client.BaseClient):
 
     @property
     def creds_valid(self):
-        creds = self.cred_info
-        return True if ('username' in creds and 'password' in creds) else False
+        c = self.cred_info
+        return True if c.get('username') and c.get('password') else False
 
     @property
-    def merchant_valid(self):
-        return True if 'merchant' in self.cred_info else False
+    def merchant(self):
+        return self.cred_info.get('merchant')
 
     @property
     def endpoint(self):
-        return self.auth_info.get('endpoint', None)
+        return self.auth_info.get('endpoint')
 
     def get_token_key(self, key):
         """
@@ -47,8 +47,8 @@ class AuthHelper(AuthBase, client.BaseClient):
 
         :param key: What to get
         """
-        token_info = self.auth_info.get('token', None)
-        return token_info.get('id', None) if token_info else token_info
+        token_info = self.auth_info.get('token')
+        return token_info.get('id') if token_info else token_info
 
     @property
     def token(self):

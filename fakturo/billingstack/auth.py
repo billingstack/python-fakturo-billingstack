@@ -68,7 +68,7 @@ class AuthHelper(AuthBase, client.BaseClient):
         return request
 
     def refresh_auth(self):
-        LOG.debug('Authenticating on URL %s info %s' % (self.url, self.cred_info))
         auth_data = dict([(k, v) for k, v in self.cred_info.items() if v])
+        LOG.debug('Authenticating on URL %s CREDENTIALS %s' % (self.url, auth_data))
         response = self.post('/authenticate', data=json.dumps(auth_data))
         self.auth_info.update(response.json)

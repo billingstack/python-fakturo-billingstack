@@ -38,26 +38,26 @@ class Base(object):
         :type item: bool
         """
         i = 0
-        reversed = []
+        url = []
         current = cls
         while current:
             next = current.parent or None
-            if next:
+
+            if current.resource:
                 if not item and i == 0:
-                    part = '/' + current.resource
+                    part = current.resource
                 else:
                     part = current._item_url()
             else:
-                part = current.resource
-            if part:
-                if not part.startswith('/'):
-                    part = '/' + part
-                reversed.append(part)
+                part = current.url
+
+            if part and not part.startswith('/'):
+                part = '/' + part
+            url.append(part)
             i += 1
             current = next
-
-        reversed.reverse()
-        return ''.join(reversed) if reversed else None
+        url.reverse()
+        return ''.join(url) if url else None
 
     @property
     def item_url(self):
@@ -117,8 +117,8 @@ class Base(object):
 
 
 class Merchant(Base):
-    collection_url = '/merchants'
-    item_url = collection_url + '/%(merchant_id)s'
+    resource = 'merchants'
+    in_base = False
 
     def create(self, values):
         return self.create(values).json
@@ -137,7 +137,6 @@ class Merchant(Base):
 
 
 class Customer(Base):
-    parent = Merchant
     resource = 'customers'
 
     def create(self, merchant_id, customer_id, values):
@@ -157,7 +156,6 @@ class Customer(Base):
 
 
 class Product(Base):
-    parent = Merchant
     resource = 'products'
 
     def create(self, merchant_id, product_id, values):
@@ -177,7 +175,6 @@ class Product(Base):
 
 
 class Plan(Base):
-    parent = Merchant
     resource = 'plans'
 
     def create(self, merchant_id, values):

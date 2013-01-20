@@ -118,7 +118,6 @@ class Base(object):
 
 class Merchant(Base):
     resource = 'merchants'
-    in_base = False
 
     def create(self, values):
         return self.create(values).json

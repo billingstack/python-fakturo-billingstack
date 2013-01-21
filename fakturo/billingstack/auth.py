@@ -11,18 +11,18 @@ LOG = logging.getLogger(__name__)
 
 class AuthHelper(AuthBase, client.BaseClient):
     def __init__(self, url, username=None, password=None,
-                 merchant_name=None, customer_name=None):
+                 account_name=None, customer_name=None):
         super(AuthHelper, self).__init__(url)
 
         self.auth_info = {}
 
-        if not merchant_name and customer_name:
-            raise ValueError('Customer set but not Merchant')
+        if not account_name and customer_name:
+            raise ValueError('Customer set but not ')
 
         cred_info = {
             'username': username,
             'password': password,
-            'merchant': merchant_name,
+            'merchant': account_name,
             'customer': customer_name
         }
 
@@ -54,7 +54,7 @@ class AuthHelper(AuthBase, client.BaseClient):
         return self.auth_info.get('endpoint')
 
     @property
-    def merchant(self):
+    def account(self):
         return self.auth_info.get('merchant')
 
     @property

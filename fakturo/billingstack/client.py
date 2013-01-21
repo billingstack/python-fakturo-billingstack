@@ -21,8 +21,8 @@ class Client(client.BaseClient):
             setattr(self, cls.get_name(), cls(self))
 
     @property
-    def merchant_id(self):
-        return self.requests.auth.merchant.get('id') \
+    def account_id(self):
+        return self.requests.auth.account.get('id') \
             if self.requests.auth.customer else None
 
     @property

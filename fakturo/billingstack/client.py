@@ -22,8 +22,10 @@ class Client(client.BaseClient):
 
     @property
     def merchant_id(self):
-        return self.requests.auth.merchant.get('id')
+        return self.requests.auth.merchant.get('id') \
+            if self.requests.auth.customer else None
 
     @property
     def customer_id(self):
-        return self.requests.auth.customer.get('id')
+        return self.requests.auth.customer.get('id') if \
+            self.requests.auth.customer else None

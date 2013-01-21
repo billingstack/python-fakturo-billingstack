@@ -176,13 +176,13 @@ class Account(Base):
     def list(self):
         return self._list().json
 
-    def get(self, account_id):
+    def get(self, merchant_id):
         return self._get(locals()).json
 
-    def update(self, account_id, values):
+    def update(self, merchant_id, values):
         return self._get(locals()).json
 
-    def delete(self, account_id):
+    def delete(self, merchant_id):
         return self._delete(locals()).json
 
 
@@ -190,19 +190,19 @@ class Customer(Base):
     parent = Account
     resource_name = 'customers'
 
-    def create(self, account_id, customer_id, values):
+    def create(self, merchant_id, customer_id, values):
         return self._create(locals(), values).json
 
-    def list(self, account_id):
+    def list(self, merchant_id):
         return self._list(locals()).json
 
-    def get(self, account_id, customer_id):
+    def get(self, merchant_id, customer_id):
         return self._get(locals()).json
 
-    def update(self, account_id, customer_id, values):
+    def update(self, merchant_id, customer_id, values):
         return self._get(locals()).json
 
-    def delete(self, account_id, customer_id):
+    def delete(self, merchant_id, customer_id):
         return self._delete(locals()).json
 
 
@@ -210,19 +210,19 @@ class Product(Base):
     parent = Account
     resource_name = 'products'
 
-    def create(self, account_id, product_id, values):
+    def create(self, merchant_id, product_id, values):
         return self._create(locals(), values).json
 
-    def list(self, account_id):
+    def list(self, merchant_id):
         return self._list(locals()).json
 
-    def get(self, account_id, product_id):
+    def get(self, merchant_id, product_id):
         return self._get(locals()).json
 
-    def update(self, account_id, product_id, values):
+    def update(self, merchant_id, product_id, values):
         return self._get(locals()).json
 
-    def delete(self, account_id, product_id):
+    def delete(self, merchant_id, product_id):
         return self._delete(locals()).json
 
 
@@ -230,19 +230,19 @@ class Plan(Base):
     parent = Account
     resource_name = 'plans'
 
-    def create(self, account_id, values):
+    def create(self, merchant_id, values):
         return self._create(locals(), values).json
 
-    def list(self, account_id):
+    def list(self, merchant_id):
         return self._list(locals()).json
 
-    def get(self, account_id, plan_id):
+    def get(self, merchant_id, plan_id):
         return self._get(locals()).json
 
-    def update(self, account_id, plan_id, values):
+    def update(self, merchant_id, plan_id, values):
         return self._get(locals()).json
 
-    def delete(self, account_id, plan_id):
+    def delete(self, merchant_id, plan_id):
         return self._delete(locals()).json
 
 
@@ -250,19 +250,19 @@ class PlanItem(Base):
     parent = Plan
     resource_name = 'items'
 
-    def create(self, account_id, plan_id, values):
+    def create(self, merchant_id, plan_id, values):
         return self._create(locals(), values).json
 
-    def list(self, account_id, plan_id):
+    def list(self, merchant_id, plan_id):
         return self._list(locals()).json
 
-    def get(self, account_id, plan_id, item_id):
+    def get(self, merchant_id, plan_id, item_id):
         return self._get(locals()).json
 
-    def update(self, account_id, plan_id, item_id, values):
+    def update(self, merchant_id, plan_id, item_id, values):
         return self._get(locals()).json
 
-    def delete(self, account_id, plan_id, item_id):
+    def delete(self, merchant_id, plan_id, item_id):
         return self._delete(locals()).json
 
 
@@ -270,19 +270,19 @@ class PlanItemRule(Base):
     parent = PlanItem
     resource_name = 'rules'
 
-    def create(self, account_id, plan_id, item_id, values):
+    def create(self, merchant_id, plan_id, item_id, values):
         return self._create(locals(), values).json
 
-    def list(self, account_id, plan_id, item_id):
+    def list(self, merchant_id, plan_id, item_id):
         return self._list(locals()).json
 
-    def get(self, account_id, plan_id, item_id, rule_id):
+    def get(self, merchant_id, plan_id, item_id, rule_id):
         return self._get(locals()).json
 
-    def update(self, account_id, plan_id, item_id, rule_id, values):
+    def update(self, merchant_id, plan_id, item_id, rule_id, values):
         return self._get(locals()).json
 
-    def delete(self, account_id, plan_id, item_id, rule_id):
+    def delete(self, merchant_id, plan_id, item_id, rule_id):
         return self._delete(locals()).json
 
 
@@ -290,25 +290,25 @@ class PlanItemRuleRange(Base):
     parent = PlanItemRule
     resource_name = 'ranges'
 
-    def create(self, account_id, plan_id, item_id, rule_id, values):
+    def create(self, merchant_id, plan_id, item_id, rule_id, values):
         response = self.client.post(self.collection_url % locals(),
                                     data=json.dumps(values))
         return response.json
 
-    def list(self, account_id, plan_id, item_id, rule_id):
+    def list(self, merchant_id, plan_id, item_id, rule_id):
         response = self.client.get(self.collection_url % locals())
         return response.json
 
-    def get(self, account_id, plan_id, item_id, rule_id, range_id):
+    def get(self, merchant_id, plan_id, item_id, rule_id, range_id):
         response = self.client.get(self.item_url % locals())
         return response.json
 
-    def update(self, account_id, plan_id, item_id, rule_id, range_id, values):
+    def update(self, merchant_id, plan_id, item_id, rule_id, range_id, values):
         response = self.client.update(self.item_url % locals(),
                                       data=json.dumps(values))
         return response.json
 
-    def delete(self, account_id, plan_id, item_id, rule_id, range_id):
+    def delete(self, merchant_id, plan_id, item_id, rule_id, range_id):
         self.client.delete(self.item_url % locals())
 
 

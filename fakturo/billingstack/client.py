@@ -1,7 +1,7 @@
 import logging
 
 from fakturo.core import client
-from fakturo.billingstack import auth, controller
+from fakturo.billingstack import auth, resource
 
 
 LOG = logging.getLogger(__name__)
@@ -14,10 +14,10 @@ class Client(client.BaseClient):
         # NOTE: Helper object that's set on requests.auth
         self.requests.auth = auth.AuthHelper(url, **kw)
 
-        ctrls = controller.__all__
-        LOG.debug('Loading Controllers: %s' % [c.get_name() for c in ctrls])
+        resources = resource.__all__
+        LOG.debug('Loading Controllers: %s' % [c.get_name() for c in resources])
 
-        for cls in ctrls:
+        for cls in resources:
             setattr(self, cls.get_name(), cls(self))
 
     @property

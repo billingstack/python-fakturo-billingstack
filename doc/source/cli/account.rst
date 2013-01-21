@@ -29,9 +29,13 @@ Create
 List
 ====
 
+Example
+
 .. code-block:: bash
 
    fakturo account-list
+
+Result
 
 .. code-block:: text
 
@@ -45,9 +49,10 @@ Get
 ===
 
 Example
+
 .. code-block:: bash
 
-   fakturo merchant-get 4028868b3c4c43ed013c4c4551600000
+   fakturo account-get 4028868b3c4c43ed013c4c4551600000
 
 Update
 ======

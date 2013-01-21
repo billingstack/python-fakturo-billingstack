@@ -30,11 +30,13 @@ List
 ====
 
 Example
+
 .. code-block:: bash
 
    fakturo customer-list 4028868b3c4c43ed013c4c4551600000
 
 Results
+
 .. code-block:: text
 
    +----------+----------------------------------+----------+--------+
@@ -47,11 +49,13 @@ Get
 ===
 
 Example
+
 .. code-block:: bash
 
    fakturo customer-get [positional arg] [opts]
 
 Result
+
 .. code-block:: text
 
    +----------+----------------------------------+
@@ -74,6 +78,7 @@ Delete
 ======
 
 Example
+
 .. code-block:: bash
 
    fakturo customer-delete 4028868b3c4c43ed013c4c455160000 4028868b3c4c43ed013c4c4622130016

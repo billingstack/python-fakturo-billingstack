@@ -8,7 +8,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Client(client.BaseClient):
-    def __init__(self, url=None, **kw):
+    def __init__(self, url='http://localhost:9090/billingstack', **kw):
         super(Client, self).__init__(url)
 
         # NOTE: Helper object that's set on requests.auth

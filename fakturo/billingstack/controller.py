@@ -10,11 +10,14 @@ LOG = logging.getLogger(__name__)
 
 
 class Base(resource.BaseResource):
-    resource = None
-    resource_exclude = False
-    url = None
-
     parent = None
+
+    resource_name = None
+    resource_exclude = False
+
+    resource_key = None
+
+    url = None
 
     @classmethod
     def _item_url(cls, resource_exclude=False):
@@ -24,10 +27,10 @@ class Base(resource.BaseResource):
         :return: URL For a Item
         :rtype: string
         """
-        if cls.resource:
-            part_id = '/' + '%(' + cls.resource[0:-1] + '_id)s'
+        if cls.resource_name:
+            part_id = '/' + '%(' + cls.resource_name[0:-1] + '_id)s'
 
-            return  part_id if resource_exclude else '/' + cls.resource + part_id
+            return  part_id if resource_exclude else '/' + cls.resource_name + part_id
         else:
             return cls.url
 
@@ -45,9 +48,9 @@ class Base(resource.BaseResource):
         while current:
             next = current.parent or None
 
-            if current.resource:
+            if current.resource_name:
                 if not item and i == 0:
-                    part = current.resource
+                    part = current.resource_name
                 else:
                     exclude = True if not next and current.resource_exclude else False
                     part = current._item_url(resource_exclude=exclude)
@@ -81,8 +84,9 @@ class Base(resource.BaseResource):
         """
         Get the Name of this Controller
         """
+        name = cls.resource_key or cls.__name__
         return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r'_\1',
-                      cls.__name__).lower()
+                      name.lower())
 
     def wrap_request(self, func, url, url_data=None, *args, **kw):
         """
@@ -162,7 +166,8 @@ class Base(resource.BaseResource):
 
 
 class Account(Base):
-    resource = 'merchants'
+    resource_key = 'account'
+    resource_name = 'merchants'
     resource_exclude = True
 
     def create(self, values):
@@ -183,7 +188,7 @@ class Account(Base):
 
 class Customer(Base):
     parent = Account
-    resource = 'customers'
+    resource_name = 'customers'
 
     def create(self, account_id, customer_id, values):
         return self._create(locals(), values).json
@@ -203,7 +208,7 @@ class Customer(Base):
 
 class Product(Base):
     parent = Account
-    resource = 'products'
+    resource_name = 'products'
 
     def create(self, account_id, product_id, values):
         return self._create(locals(), values).json
@@ -223,7 +228,7 @@ class Product(Base):
 
 class Plan(Base):
     parent = Account
-    resource = 'plans'
+    resource_name = 'plans'
 
     def create(self, account_id, values):
         return self._create(locals(), values).json
@@ -243,7 +248,7 @@ class Plan(Base):
 
 class PlanItem(Base):
     parent = Plan
-    resource = 'items'
+    resource_name = 'items'
 
     def create(self, account_id, plan_id, values):
         return self._create(locals(), values).json
@@ -263,7 +268,7 @@ class PlanItem(Base):
 
 class PlanItemRule(Base):
     parent = PlanItem
-    resource = 'rules'
+    resource_name = 'rules'
 
     def create(self, account_id, plan_id, item_id, values):
         return self._create(locals(), values).json
@@ -283,7 +288,7 @@ class PlanItemRule(Base):
 
 class PlanItemRuleRange(Base):
     parent = PlanItemRule
-    resource = 'ranges'
+    resource_name = 'ranges'
 
     def create(self, account_id, plan_id, item_id, rule_id, values):
         response = self.client.post(self.collection_url % locals(),

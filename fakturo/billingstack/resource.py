@@ -88,7 +88,7 @@ class Base(resource.BaseResource):
         return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r'_\1',
                       name.lower())
 
-    def wrap_request(self, func, url, url_data=None, *args, **kw):
+    def wrap_request(self, func, url, url_data={}, *args, **kw):
         """
         Constructs the URL from the given arguments if it has a url and
         url_data. If only url is given then it just uses that.
@@ -112,12 +112,15 @@ class Base(resource.BaseResource):
         :return: requests Response object
         :rtype: Response
         """
-        if url_data != None:
+
+        account_id = url_data.get('account_id') if url_data else self.client.account_id
+
+        if url_data:
+
+            url_data['merchant_id'] = account_id
+
             url = url % url_data
             LOG.debug('URL formatted to: %s' % url)
-
-        if self.client.account_id:
-            url = '/' + self.client.account_id + url
 
         response = func(url, *args, **kw)
         return response
@@ -176,13 +179,13 @@ class Account(Base):
     def list(self):
         return self._list().json
 
-    def get(self, merchant_id):
+    def get(self, account_id=None):
         return self._get(locals()).json
 
-    def update(self, merchant_id, values):
+    def update(self, values, account_id=None):
         return self._get(locals()).json
 
-    def delete(self, merchant_id):
+    def delete(self, account_id):
         return self._delete(locals()).json
 
 
@@ -230,19 +233,19 @@ class Plan(Base):
     parent = Account
     resource_name = 'plans'
 
-    def create(self, merchant_id, values):
+    def create(self, values, account_id=None):
         return self._create(locals(), values).json
 
-    def list(self, merchant_id):
+    def list(self, account_id=None):
         return self._list(locals()).json
 
-    def get(self, merchant_id, plan_id):
+    def get(self, plan_id, account_id=None):
         return self._get(locals()).json
 
-    def update(self, merchant_id, plan_id, values):
+    def update(self, plan_id, values, account_id=None):
         return self._get(locals()).json
 
-    def delete(self, merchant_id, plan_id):
+    def delete(self, plan_id, account_id=None):
         return self._delete(locals()).json
 
 
@@ -312,4 +315,30 @@ class PlanItemRuleRange(Base):
         self.client.delete(self.item_url % locals())
 
 
-__all__ = [Account, Customer, Product, Plan, PlanItem, PlanItemRule, PlanItemRuleRange]
+class Subscription(Base):
+    parent = Customer
+    resource_name = 'customers'
+
+    def create(self, merchant_id, plan_id, item_id, rule_id, values):
+        response = self.client.post(self.collection_url % locals(),
+                                    data=json.dumps(values))
+        return response.json
+
+    def list(self, merchant_id, plan_id, item_id, rule_id):
+        response = self.client.get(self.collection_url % locals())
+        return response.json
+
+    def get(self, merchant_id, plan_id, item_id, rule_id, range_id):
+        response = self.client.get(self.item_url % locals())
+        return response.json
+
+    def update(self, merchant_id, plan_id, item_id, rule_id, range_id, values):
+        response = self.client.update(self.item_url % locals(),
+                                      data=json.dumps(values))
+        return response.json
+
+    def delete(self, merchant_id, plan_id, item_id, rule_id, range_id):
+        self.client.delete(self.item_url % locals())
+
+
+__all__ = [Account, Customer, Product, Plan, PlanItem, PlanItemRule, PlanItemRuleRange, Subscription]

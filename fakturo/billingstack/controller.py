@@ -8,6 +8,7 @@ LOG = logging.getLogger(__name__)
 
 class Base(object):
     resource = None
+    resource_exclude = False
     url = None
 
     parent = None
@@ -16,7 +17,7 @@ class Base(object):
         self.client = client
 
     @classmethod
-    def _item_url(cls):
+    def _item_url(cls, resource_exclude=False):
         """
         Return the url part for a single resource of this class
 
@@ -24,8 +25,9 @@ class Base(object):
         :rtype: string
         """
         if cls.resource:
-            id_key = '%(' + cls.resource[0:-1] + '_id)s'
-            return '/' + cls.resource + '/' + id_key
+            part_id = '/' + '%(' + cls.resource[0:-1] + '_id)s'
+
+            return  part_id if resource_exclude else '/' + cls.resource + part_id
         else:
             return cls.url
 
@@ -47,7 +49,8 @@ class Base(object):
                 if not item and i == 0:
                     part = current.resource
                 else:
-                    part = current._item_url()
+                    exclude = True if not next and current.resource_exclude else False
+                    part = current._item_url(resource_exclude=exclude)
             else:
                 part = current.url
 
@@ -82,35 +85,77 @@ class Base(object):
                       cls.__name__).lower()
 
     def wrap_request(self, func, url, url_data=None, *args, **kw):
+        """
+        Constructs the URL from the given arguments if it has a url and
+        url_data. If only url is given then it just uses that.
+
+        :param func: A function to be invoked.
+                     Example: self.client.[get,list,update,delete,create]
+        :type func: callable
+
+        :param url: A URL or Format string
+        :type url: string
+
+        :param url_data: Data from which to construct the URL
+        :type url_data: dict
+
+        :param args: Arguments that's forwarded to the func
+        :type args: list
+
+        :param kw: Keywords to forward to func
+        :type kw: dict / keywords
+
+        :return: requests Response object
+        :rtype: Response
+        """
         if url_data != None:
             url = url % url_data
             LOG.debug('URL formatted to: %s' % url)
+
+        if self.client.merchant_id:
+            url = '/' + self.client.merchant_id + url
+
         response = func(url, *args, **kw)
         return response
 
     def _create(self, values, *args, **kw):
+        """
+        Create a new Resource from values
+        """
         url = kw.pop('url', self.collection_url)
         response = self.wrap_request(
             self.client.post, url, data=json.dumps(values), *args, **kw)
         return response
 
     def _list(self, *args, **kw):
+        """
+        List objects of this Resource
+        """
         url = kw.pop('url', self.collection_url)
         response = self.wrap_request(self.client.get, url, *args, **kw)
         return response
 
     def _get(self, *args, **kw):
+        """
+        Get a object of this Resource
+        """
         url = kw.pop('url', self.item_url)
         response = self.wrap_request(self.client.get, url, *args, **kw)
         return response
 
     def _upate(self, values, *args, **kw):
+        """
+        Update a Resource
+        """
         url = kw.pop('url', self.item_url)
         response = self.wrap_request(
             self.client.update, url, data=json.dumps(values), *args, **kw)
         return response
 
     def _delete(self, *args, **kw):
+        """
+        Delete a Resource
+        """
         url = kw.pop('url', self.item_url)
         response = self.wrap_request(self.client.delete, url, *args, **kw)
         return response
@@ -118,6 +163,7 @@ class Base(object):
 
 class Merchant(Base):
     resource = 'merchants'
+    resource_exclude = True
 
     def create(self, values):
         return self.create(values).json
@@ -136,6 +182,7 @@ class Merchant(Base):
 
 
 class Customer(Base):
+    parent = Merchant
     resource = 'customers'
 
     def create(self, merchant_id, customer_id, values):
@@ -155,6 +202,7 @@ class Customer(Base):
 
 
 class Product(Base):
+    parent = Merchant
     resource = 'products'
 
     def create(self, merchant_id, product_id, values):
@@ -174,6 +222,7 @@ class Product(Base):
 
 
 class Plan(Base):
+    parent = Merchant
     resource = 'plans'
 
     def create(self, merchant_id, values):

@@ -114,7 +114,11 @@ class Base(resource.BaseResource):
         :rtype: Response
         """
 
-        account_id = url_data.get('account_id') if url_data else self.client.account_id
+        if url_data and url_data.get('account_id'):
+            account_id = url_data['account_id']
+        else:
+            account_id = self.client.account_id
+
         if not account_id:
             raise exceptions.BadRequest('Missing account_id either in args or from auth')
 

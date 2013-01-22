@@ -23,7 +23,7 @@ class Client(client.BaseClient):
     @property
     def account_id(self):
         return self.requests.auth.account.get('id') \
-            if self.requests.auth.customer else None
+            if self.requests.auth.account else None
 
     @property
     def customer_id(self):

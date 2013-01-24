@@ -114,15 +114,18 @@ class Base(resource.BaseResource):
         :rtype: Response
         """
 
+        # NOTE: Fixup customer + merchant id
         if url_data and url_data.get('account_id'):
             account_id = url_data['account_id']
-        else:
+        elif self.client.account_id:
             account_id = self.client.account_id
-
-        if not account_id:
+        else:
             raise exceptions.BadRequest('Missing account_id either in args or from auth')
+        if (url_data and not url_data.get('customer_id')) and self.client.customer_id:
+            url_data['customer_id'] = self.client.customer_id
 
         if url_data:
+            # NOTE: Can this be changed?
             url_data['merchant_id'] = account_id
 
             url = url % url_data

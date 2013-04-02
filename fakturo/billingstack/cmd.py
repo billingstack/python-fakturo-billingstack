@@ -5,16 +5,14 @@ class CommandApi(object):
     # account commands
     @staticmethod
     def account_create_parser(parser):
-        parser.add_argument('--username')
-        parser.add_argument('--password')
-        parser.add_argument('--email')
+        parser.add_argument('--name')
         parser.add_argument('--currency', default='NOK')
+        parser.add_argument('--language', default='NOR')
 
     def account_create(self, args, command):
         values = dict(
-            username=args.username,
-            password=args.password,
-            email=args.email,
+            name=args.name,
+            language=args.language,
             currency=args.currency
         )
         return self.client.account.create(values)
@@ -41,7 +39,8 @@ class CommandApi(object):
         """
         values = dict(
             email=args.email,
-            currency=args.currency)
+            currency=args.currency,
+            language=args.language)
         return self.client.account.update(values, account_id=args.account_id)
 
     @staticmethod

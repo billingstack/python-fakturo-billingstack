@@ -90,10 +90,26 @@ class Base(resource.BaseResource):
         return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r'_\1',
                       name.lower())
 
-    def wrap_request(self, func, url, url_data={}, *args, **kw):
+    def _data(self, **kw):
+        data = {}
+        for k, v in kw.items():
+            if v is not None:
+                data[k] = v
+        return data
+
+    def _format_url(self, f_url, **f_data):
+        LOG.debug("Formatting URL %s with data %s", f_url, f_data)
+        try:
+            return f_url % f_data
+        except KeyError:
+            msg = "Insufficient data to format URL: %s" % f_data
+            raise exceptions.LocalError(msg)
+
+    def wrap_request(self, func, url=None, f_url=None, f_data=None,
+                     *args, **kw):
         """
         Constructs the URL from the given arguments if it has a url and
-        url_data. If only url is given then it just uses that.
+        f_data. If only url is given then it just uses that.
 
         :param func: A function to be invoked.
                      Example: self.client.[get,list,update,delete,create]
@@ -102,8 +118,8 @@ class Base(resource.BaseResource):
         :param url: A URL or Format string
         :type url: string
 
-        :param url_data: Data from which to construct the URL
-        :type url_data: dict
+        :param f_data: Data from which to construct the URL
+        :type f_data: dict
 
         :param args: Arguments that's forwarded to the func
         :type args: list
@@ -114,25 +130,21 @@ class Base(resource.BaseResource):
         :return: requests Response object
         :rtype: Response
         """
-        if url_data and url_data.get('account_id') is not None:
-            account_id = url_data['account_id']
+        account_id = None
+        if f_data and f_data.get('account_id') is not None:
+            account_id = f_data['account_id']
         elif self.client.account_id:
             account_id = self.client.account_id
-        else:
-            account_id = None
 
-        if url_data:
+        # NOTE: URL takes precedense over f_url
+        if not url and (f_url and f_data):
             # NOTE: Can this be changed?
             if account_id:
-                url_data['merchant_id'] = account_id
-
-            try:
-                url = url % url_data
-            except KeyError:
-                msg = "Insufficient data to format URL: %s" % url_data
-                raise exceptions.LocalError(msg)
-
-            LOG.debug('URL formatted to: %s' % url)
+                f_data['merchant_id'] = account_id
+            url = self._format_url(f_url, **f_data)
+        elif not url:
+            msg = 'No URL or URL Format String was passed'
+            raise exceptions.LocalError(msg)
 
         response = func(url, *args, **kw)
         return response
@@ -141,9 +153,9 @@ class Base(resource.BaseResource):
         """
         Create a new Resource from values
         """
-        url = kw.pop('url', self.collection_url)
+        f_url = kw.pop('f_url', self.collection_url)
         response = self.wrap_request(
-            self.client.post, url, data=json.dumps(values),
+            self.client.post, f_url=f_url, data=json.dumps(values),
             status_code=status_code, *args, **kw)
         return response
 
@@ -151,34 +163,36 @@ class Base(resource.BaseResource):
         """
         List objects of this Resource
         """
-        url = kw.pop('url', self.collection_url)
-        response = self.wrap_request(self.client.get, url, *args, **kw)
+        f_url = kw.pop('f_url', self.collection_url)
+        response = self.wrap_request(self.client.get, f_url=f_url, *args, **kw)
         return response
 
     def _get(self, *args, **kw):
         """
         Get a object of this Resource
         """
-        url = kw.pop('url', self.item_url)
-        response = self.wrap_request(self.client.get, url, *args, **kw)
+        f_url = kw.pop('f_url', self.item_url)
+        response = self.wrap_request(self.client.get, f_url=f_url, *args, **kw)
         return response
 
     def _update(self, values, *args, **kw):
         """
         Update a Resource
         """
-        url = kw.pop('url', self.item_url)
+        f_url = kw.pop('f_url', self.item_url)
         response = self.wrap_request(
-            self.client.update, url, data=json.dumps(values), *args, **kw)
+            self.client.update, f_url=f_url, data=json.dumps(values),
+            *args, **kw)
         return response
 
     def _delete(self, status_code=204, *args, **kw):
         """
         Delete a Resource
         """
-        url = kw.pop('url', self.item_url)
+        f_url = kw.pop('f_url', self.item_url)
         response = self.wrap_request(
-            self.client.delete, url, status_code=status_code, *args, **kw)
+            self.client.delete, f_url=f_url, status_code=status_code,
+            *args, **kw)
         return response
 
 
@@ -187,59 +201,79 @@ class Account(Base):
     resource_name = 'merchants'
 
     def create(self, values):
-        return self._create(values).json
+        return self._create(values, url=self.collection_url).json
 
     def list(self):
-        return self._list().json
+        return self._list(url=self.collection_url).json
 
     def get(self, account_id=None):
-        return self._get(url_data={'account_id': account_id}).json
+        return self._get(f_data=self._data(account_id=account_id)).json
 
     def update(self, values, account_id=None):
-        return self._get(url_data={'account_id': account_id}).json
+        return self._get(f_data=self._data(account_id=account_id)).json
 
     def delete(self, account_id):
-        return self._delete(url_data={'account_id': account_id})
+        return self._delete(f_data=self._data(account_id=account_id))
 
 
 class Customer(Base):
     parent = Account
     resource_name = 'customers'
 
-    def create(self, account_id, customer_id, values):
-        return self._create(url_data=locals(), values).json
+    def create(self, account_id, values):
+        f_data = self._data(account_id=account_id)
+
+        return self._create(values, f_data=f_data).json
 
     def list(self, account_id):
-        return self._list(url_data=locals()).json
+        f_data = self._data(account_id=account_id)
+
+        return self._list(f_data=f_data).json
 
     def get(self, account_id, customer_id):
-        return self._get(url_data=locals()).json
+        f_data = self._data(account_id=account_id, customer_id=customer_id)
+
+        return self._get(f_data=f_data).json
 
     def update(self, account_id, customer_id, values):
-        return self._get(url_data=locals()).json
+        f_data = self._data(account_id=account_id, customer_id=customer_id)
+
+        return self._get(f_data=f_data).json
 
     def delete(self, account_id, customer_id):
-        self._delete(url_data=locals())
+        f_data = self._data(account_id=account_id, customer_id=customer_id)
+
+        return self._delete(f_data=f_data)
 
 
 class Product(Base):
     parent = Account
     resource_name = 'products'
 
-    def create(self, account_id, product_id, values):
-        return self._create(url_data=locals(), values).json
+    def create(self, account_id, values):
+        f_data = self._data(account_id=account_id)
+
+        return self._create(values, f_data=f_data).json
 
     def list(self, account_id):
-        return self._list(url_data=locals()).json
+        f_data = self._data(account_id=account_id)
+
+        return self._list(f_data=f_data).json
 
     def get(self, account_id, product_id):
-        return self._get(url_data=locals()).json
+        f_data = self._data(account_id=account_id, product_id=product_id)
+
+        return self._get(f_data=f_data).json
 
     def update(self, account_id, product_id, values):
-        return self._get(url_data=locals()).json
+        f_data = self._data(account_id=account_id, product_id=product_id)
+
+        return self._get(f_data=f_data).json
 
     def delete(self, account_id, product_id):
-        return self._delete(url_data=locals()).json
+        f_data = self._data(account_id=account_id, product_id=product_id)
+
+        return self._delete(f_data=f_data).json
 
 
 class Plan(Base):
@@ -247,19 +281,29 @@ class Plan(Base):
     resource_name = 'plans'
 
     def create(self, values, account_id=None):
-        return self._create(url_data=locals(), values).json
+        f_data = self._data(account_id=account_id)
+
+        return self._create(values, f_data=f_data).json
 
     def list(self, account_id=None):
-        return self._list(url_data=locals()).json
+        f_data = self._data(account_id=account_id)
+
+        return self._list(f_data=f_data).json
 
     def get(self, plan_id, account_id=None):
-        return self._get(url_data=locals()).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id)
+
+        return self._get(f_data=f_data).json
 
     def update(self, plan_id, values, account_id=None):
-        return self._update(url_data=locals(), values).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id)
+
+        return self._update(values, f_data=f_data).json
 
     def delete(self, plan_id, account_id=None):
-        return self._delete(url_data=locals()).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id)
+
+        return self._delete(f_data=f_data).json
 
 
 class PlanItem(Base):
@@ -267,80 +311,61 @@ class PlanItem(Base):
     resource_name = 'items'
 
     def create(self, account_id, plan_id, values):
-        return self._create(url_data=locals(), values).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id)
+
+        return self._create(values, f_data=f_data).json
 
     def list(self, account_id, plan_id):
-        return self._list(url_data=locals()).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id)
+
+        return self._list(f_data=f_data).json
 
     def get(self, account_id, plan_id, item_id):
-        return self._get(url_data=locals()).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id,
+                            item_id=item_id)
+
+        return self._get(f_data=f_data).json
 
     def update(self, account_id, plan_id, item_id, values):
-        return self._update(url_data=locals(), values).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id,
+                            item_id=item_id)
+
+        return self._update(values, f_data=f_data).json
 
     def delete(self, account_id, plan_id, item_id):
-        return self._delete(url_data=locals()).json
+        f_data = self._data(account_id=account_id, plan_id=plan_id,
+                            item_id=item_id)
 
-
-class PlanItemRule(Base):
-    parent = PlanItem
-    resource_name = 'rules'
-
-    def create(self, account_id, plan_id, item_id, values):
-        return self._create(url_data=locals(), values).json
-
-    def list(self, account_id, plan_id, item_id):
-        return self._list(url_data=locals()).json
-
-    def get(self, account_id, plan_id, item_id, rule_id):
-        return self._get(url_data=locals()).json
-
-    def update(self, account_id, plan_id, item_id, rule_id, values):
-        return self._update(url_data=locals(), values).json
-
-    def delete(self, account_id, plan_id, item_id, rule_id):
-        return self._delete(url_data=locals()).json
-
-
-class PlanItemRuleRange(Base):
-    parent = PlanItemRule
-    resource_name = 'ranges'
-
-    def create(self, account_id, plan_id, item_id, rule_id, values):
-        return self._create(url_data=locals(), values).json
-
-    def list(self, account_id, plan_id, item_id, rule_id):
-        return self._list(url_data=locals()).json
-
-    def get(self, account_id, plan_id, item_id, rule_id, range_id):
-        return self._get(url_data=locals()).json
-
-    def update(self, account_id, plan_id, item_id, rule_id, range_id, values):
-        return self._update(url_data=locals(), values).json
-
-    def delete(self, account_id, plan_id, item_id, rule_id, range_id):
-        return self._delete(url_data=locals()).json
+        return self._delete(f_data=f_data).json
 
 
 class Subscription(Base):
     parent = Customer
     resource_name = 'customers'
 
-    def create(self, account_id, plan_id, item_id, rule_id, values):
-        return self._create(url_data=locals(), values).json
+    def create(self, account_id, values):
+        return self._create(values, f_data=locals()).json
 
-    def list(self, account_id, plan_id, item_id, rule_id):
-        return self._list(url_data=locals()).json
+    def list(self, account_id):
+        f_data = self._data(account_id=account_id)
+        return self._list(f_data=f_data).json
 
-    def get(self, account_id, plan_id, item_id, rule_id, range_id):
-        return self._get(url_data=locals()).json
+    def get(self, account_id, subscription_id):
+        f_data = self._data(account_id=account_id,
+                            subscription_id=subscription_id)
+        return self._get(f_data=f_data).json
 
-    def update(self, account_id, plan_id, item_id, rule_id, range_id, values):
-        return self._update(url_data=locals(), values).json
+    def update(self, account_id, subscription_id, values):
+        f_data = self._data(account_id=account_id,
+                            subscription_id=subscription_id)
 
-    def delete(self, account_id, plan_id, item_id, rule_id, range_id):
-        return self._delete(url_data=locals()).json
+        return self._update(values, f_data=f_data).json
+
+    def delete(self, account_id, subscription_id):
+        f_data = self._data(account_id=account_id,
+                            subscription_id=subscription_id)
+
+        return self._delete(f_data=f_data).json
 
 
-__all__ = [Account, Customer, Product, Plan, PlanItem, PlanItemRule,
-           PlanItemRuleRange, Subscription]
+__all__ = [Account, Customer, Product, Plan, PlanItem, Subscription]

@@ -2,7 +2,6 @@ import logging
 import re
 import simplejson as json
 
-
 from fakturo.core import exceptions
 from fakturo.core.provider import resource
 
@@ -31,7 +30,8 @@ class Base(resource.BaseResource):
         if cls.resource_name:
             part_id = '/' + '%(' + cls.resource_name[0:-1] + '_id)s'
 
-            return  part_id if resource_exclude else '/' + cls.resource_name + part_id
+            return part_id if resource_exclude else '/' + \
+                cls.resource_name + part_id
         else:
             return cls.url
 
@@ -53,7 +53,8 @@ class Base(resource.BaseResource):
                 if not item and i == 0:
                     part = current.resource_name
                 else:
-                    exclude = True if not next and current.resource_exclude else False
+                    exclude = True if not next and current.resource_exclude \
+                        else False
                     part = current._item_url(resource_exclude=exclude)
             else:
                 part = current.url
@@ -113,22 +114,24 @@ class Base(resource.BaseResource):
         :return: requests Response object
         :rtype: Response
         """
-
-        # NOTE: Fixup customer + merchant id
         if url_data and url_data.get('account_id'):
             account_id = url_data['account_id']
         elif self.client.account_id:
             account_id = self.client.account_id
         else:
-            raise exceptions.BadRequest('Missing account_id either in args or from auth')
-        if (url_data and not url_data.get('customer_id')) and self.client.customer_id:
-            url_data['customer_id'] = self.client.customer_id
+            account_id = None
 
         if url_data:
             # NOTE: Can this be changed?
-            url_data['merchant_id'] = account_id
+            if account_id:
+                url_data['merchant_id'] = account_id
 
-            url = url % url_data
+            try:
+                url = url % url_data
+            except KeyError:
+                msg = "Insufficient data to format URL: %s" % url_data
+                raise exceptions.LocalError(msg)
+
             LOG.debug('URL formatted to: %s' % url)
 
         response = func(url, *args, **kw)
@@ -180,7 +183,6 @@ class Base(resource.BaseResource):
 class Account(Base):
     resource_key = 'account'
     resource_name = 'merchants'
-    resource_exclude = True
 
     def create(self, values):
         return self.create(values).json
@@ -350,4 +352,5 @@ class Subscription(Base):
         self.client.delete(self.item_url % locals())
 
 
-__all__ = [Account, Customer, Product, Plan, PlanItem, PlanItemRule, PlanItemRuleRange, Subscription]
+__all__ = [Account, Customer, Product, Plan, PlanItem, PlanItemRule,
+           PlanItemRuleRange, Subscription]

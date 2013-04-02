@@ -11,19 +11,18 @@ LOG = logging.getLogger(__name__)
 
 class AuthHelper(AuthBase, client.BaseClient):
     def __init__(self, url, username=None, password=None,
-                 account_name=None, customer_name=None):
+                 account_name=None):
         super(AuthHelper, self).__init__(url)
 
         self.auth_info = {}
 
-        if not account_name and customer_name:
-            raise ValueError('Customer set but not ')
+        if not account_name:
+            raise ValueError('No account given.')
 
         cred_info = {
             'username': username,
             'password': password,
-            'merchant': account_name,
-            'customer': customer_name
+            'merchant': account_name
         }
 
         self.cred_info = cred_info
@@ -38,7 +37,8 @@ class AuthHelper(AuthBase, client.BaseClient):
 
     def get_token_key(self, key):
         """
-        Return something from the token info, None if no key or no info is there
+        Return something from the token info, None if no key or no info is
+        there.
 
         :param key: What to get
         """
@@ -57,10 +57,6 @@ class AuthHelper(AuthBase, client.BaseClient):
     def account(self):
         return self.auth_info.get('merchant')
 
-    @property
-    def customer(self):
-        return self.auth_info.get('customer')
-
     def __call__(self, request):
         if not self.token and self.cred_valid:
             self.refresh_auth()
@@ -69,6 +65,7 @@ class AuthHelper(AuthBase, client.BaseClient):
 
     def refresh_auth(self):
         auth_data = dict([(k, v) for k, v in self.cred_info.items() if v])
-        LOG.debug('Authenticating on URL %s CREDENTIALS %s' % (self.url, auth_data))
+        LOG.debug('Authenticating on URL %s CREDENTIALS %s' %
+                  (self.url, auth_data))
         response = self.post('/authenticate', data=json.dumps(auth_data))
         self.auth_info.update(response.json)

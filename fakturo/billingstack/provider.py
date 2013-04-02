@@ -12,7 +12,12 @@ class BillingStackProvider(ProviderBase):
             url=cmd.app.options.api_url,
             username=cmd.app.options.username,
             password=cmd.app.options.password,
-            account_name=cmd.app.options.account
         )
+
+        if cmd.app.options.account_id:
+            opts['account_id'] = cmd.app.options.account_id
+        elif cmd.app.options.account_name:
+            opts['account_name'] = cmd.app.options.account_name
+
         client = self.get_client(**opts)
         return self.api(client)

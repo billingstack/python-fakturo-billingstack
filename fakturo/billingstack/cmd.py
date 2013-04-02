@@ -137,7 +137,8 @@ class CommandApi(object):
 
     def plan_update(self, args, command):
         values = dict(name=args.name)
-        return self.client.plan.delete(args.id, values, account_id=args.account_id)
+        return self.client.plan.delete(
+            args.id, values, account_id=args.account_id)
 
     @staticmethod
     def plan_delete_parser(parser):

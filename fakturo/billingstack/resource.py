@@ -114,7 +114,7 @@ class Base(resource.BaseResource):
         :return: requests Response object
         :rtype: Response
         """
-        if url_data and url_data.get('account_id'):
+        if url_data and url_data.get('account_id') is not None:
             account_id = url_data['account_id']
         elif self.client.account_id:
             account_id = self.client.account_id

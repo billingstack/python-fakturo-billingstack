@@ -4,10 +4,10 @@ from fakturo.billingstack.client import Client
 
 logging.basicConfig(level=logging.DEBUG)
 
-client = Client('http://localhost:9090/billingstack', username='ekarlso', password='secret0', account_name='bouvet')
+client = Client('http://localhost:6543/v1')
 
 for account in client.account.list():
-    print "== Merchant: %s==" % account['name']
+    print "== %s ==" % account['name']
     for k, v in account.items():
         if not k == 'name':
             print "INFO", k, v

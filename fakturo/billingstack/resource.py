@@ -137,13 +137,14 @@ class Base(resource.BaseResource):
         response = func(url, *args, **kw)
         return response
 
-    def _create(self, values, *args, **kw):
+    def _create(self, values, status_code=202, *args, **kw):
         """
         Create a new Resource from values
         """
         url = kw.pop('url', self.collection_url)
         response = self.wrap_request(
-            self.client.post, url, data=json.dumps(values), *args, **kw)
+            self.client.post, url, data=json.dumps(values),
+            status_code=status_code, *args, **kw)
         return response
 
     def _list(self, *args, **kw):
@@ -162,7 +163,7 @@ class Base(resource.BaseResource):
         response = self.wrap_request(self.client.get, url, *args, **kw)
         return response
 
-    def _upate(self, values, *args, **kw):
+    def _update(self, values, *args, **kw):
         """
         Update a Resource
         """
@@ -171,12 +172,13 @@ class Base(resource.BaseResource):
             self.client.update, url, data=json.dumps(values), *args, **kw)
         return response
 
-    def _delete(self, *args, **kw):
+    def _delete(self, status_code=204, *args, **kw):
         """
         Delete a Resource
         """
         url = kw.pop('url', self.item_url)
-        response = self.wrap_request(self.client.delete, url, *args, **kw)
+        response = self.wrap_request(
+            self.client.delete, url, status_code=status_code, *args, **kw)
         return response
 
 
@@ -185,19 +187,19 @@ class Account(Base):
     resource_name = 'merchants'
 
     def create(self, values):
-        return self.create(values).json
+        return self._create(values).json
 
     def list(self):
         return self._list().json
 
     def get(self, account_id=None):
-        return self._get(locals()).json
+        return self._get(url_data={'account_id': account_id}).json
 
     def update(self, values, account_id=None):
-        return self._get(locals()).json
+        return self._get(url_data={'account_id': account_id}).json
 
     def delete(self, account_id):
-        return self._delete(locals()).json
+        self._delete(url_data={'account_id': account_id})
 
 
 class Customer(Base):
@@ -217,7 +219,7 @@ class Customer(Base):
         return self._get(locals()).json
 
     def delete(self, account_id, customer_id):
-        return self._delete(locals()).json
+        self._delete(locals())
 
 
 class Product(Base):

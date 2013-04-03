@@ -206,7 +206,7 @@ class Account(Base):
     def list(self):
         return self._list(url=self.collection_url).json
 
-    def get(self, account_id=None):
+    def get(self, account_id):
         return self._get(f_data=self._data(account_id=account_id)).json
 
     def update(self, values, account_id=None):
@@ -220,28 +220,65 @@ class Customer(Base):
     parent = Account
     resource_name = 'customers'
 
-    def create(self, account_id, values):
+    def create(self, values, account_id=None):
         f_data = self._data(account_id=account_id)
 
         return self._create(values, f_data=f_data).json
 
-    def list(self, account_id):
+    def list(self, account_id=None):
         f_data = self._data(account_id=account_id)
 
         return self._list(f_data=f_data).json
 
-    def get(self, account_id, customer_id):
+    def get(self, customer_id, account_id=None):
         f_data = self._data(account_id=account_id, customer_id=customer_id)
 
         return self._get(f_data=f_data).json
 
-    def update(self, account_id, customer_id, values):
+    def update(self, customer_id, values, account_id=None):
         f_data = self._data(account_id=account_id, customer_id=customer_id)
 
         return self._get(f_data=f_data).json
 
-    def delete(self, account_id, customer_id):
+    def delete(self, customer_id, account_id=None):
         f_data = self._data(account_id=account_id, customer_id=customer_id)
+
+        return self._delete(f_data=f_data)
+
+
+class PaymentMethod(Base):
+    parent = Customer
+    resource_key = 'payment_method'
+    resource_name = 'payment-methods'
+
+    def create(self, customer_id, values, account_id=None):
+        f_data = self._data(account_id=account_id, customer_id=customer_id)
+
+        return self._create(values, f_data=f_data).json
+
+    def list(self, customer_id, account_id=None):
+        f_data = self._data(account_id=account_id, customer_id=customer_id)
+
+        return self._list(f_data=f_data).json
+
+    def get(self, customer_id, pm_id, account_id=None):
+        f_data = self._data(
+            account_id=account_id, customer_id=customer_id,
+            payment_method_id=pm_id)
+
+        return self._get(f_data=f_data).json
+
+    def update(self, customer_id, pm_id, values, account_id=None):
+        f_data = self._data(
+            account_id=account_id, customer_id=customer_id,
+            payment_method_id=pm_id)
+
+        return self._get(f_data=f_data).json
+
+    def delete(self, customer_id, pm_id, account_id=None):
+        f_data = self._data(
+            account_id=account_id, customer_id=customer_id,
+            payment_method_id=pm_id)
 
         return self._delete(f_data=f_data)
 
@@ -250,27 +287,27 @@ class Product(Base):
     parent = Account
     resource_name = 'products'
 
-    def create(self, account_id, values):
+    def create(self, values, account_id=None):
         f_data = self._data(account_id=account_id)
 
         return self._create(values, f_data=f_data).json
 
-    def list(self, account_id):
+    def list(self, account_id=None):
         f_data = self._data(account_id=account_id)
 
         return self._list(f_data=f_data).json
 
-    def get(self, account_id, product_id):
+    def get(self, product_id, account_id=None):
         f_data = self._data(account_id=account_id, product_id=product_id)
 
         return self._get(f_data=f_data).json
 
-    def update(self, account_id, product_id, values):
+    def update(self, product_id, values, account_id=None):
         f_data = self._data(account_id=account_id, product_id=product_id)
 
         return self._get(f_data=f_data).json
 
-    def delete(self, account_id, product_id):
+    def delete(self, product_id, account_id=None):
         f_data = self._data(account_id=account_id, product_id=product_id)
 
         return self._delete(f_data=f_data).json
@@ -310,29 +347,29 @@ class PlanItem(Base):
     parent = Plan
     resource_name = 'items'
 
-    def create(self, account_id, plan_id, values):
+    def create(self, plan_id, values, account_id=None):
         f_data = self._data(account_id=account_id, plan_id=plan_id)
 
         return self._create(values, f_data=f_data).json
 
-    def list(self, account_id, plan_id):
+    def list(self, plan_id, account_id=None):
         f_data = self._data(account_id=account_id, plan_id=plan_id)
 
         return self._list(f_data=f_data).json
 
-    def get(self, account_id, plan_id, item_id):
+    def get(self, plan_id, item_id, account_id=None):
         f_data = self._data(account_id=account_id, plan_id=plan_id,
                             item_id=item_id)
 
         return self._get(f_data=f_data).json
 
-    def update(self, account_id, plan_id, item_id, values):
+    def update(self, plan_id, item_id, values, account_id=None):
         f_data = self._data(account_id=account_id, plan_id=plan_id,
                             item_id=item_id)
 
         return self._update(values, f_data=f_data).json
 
-    def delete(self, account_id, plan_id, item_id):
+    def delete(self, plan_id, item_id, account_id=None):
         f_data = self._data(account_id=account_id, plan_id=plan_id,
                             item_id=item_id)
 
@@ -340,32 +377,68 @@ class PlanItem(Base):
 
 
 class Subscription(Base):
-    parent = Customer
-    resource_name = 'customers'
+    parent = Account
+    resource_name = 'subscriptions'
 
-    def create(self, account_id, values):
-        return self._create(values, f_data=locals()).json
-
-    def list(self, account_id):
+    def create(self, values, account_id=None):
         f_data = self._data(account_id=account_id)
+
+        return self._create(values, f_data=f_data).json
+
+    def list(self, account_id=None):
+        f_data = self._data(account_id=account_id)
+
         return self._list(f_data=f_data).json
 
-    def get(self, account_id, subscription_id):
+    def get(self, subscription_id, account_id=None):
         f_data = self._data(account_id=account_id,
                             subscription_id=subscription_id)
+
         return self._get(f_data=f_data).json
 
-    def update(self, account_id, subscription_id, values):
+    def update(self, subscription_id, values, account_id=None):
         f_data = self._data(account_id=account_id,
                             subscription_id=subscription_id)
 
         return self._update(values, f_data=f_data).json
 
-    def delete(self, account_id, subscription_id):
+    def delete(self, subscription_id, account_id=None):
         f_data = self._data(account_id=account_id,
                             subscription_id=subscription_id)
 
         return self._delete(f_data=f_data).json
 
 
-__all__ = [Account, Customer, Product, Plan, PlanItem, Subscription]
+class Usage(Base):
+    parent = Account
+    resource_name = 'usages'
+
+    def create(self, values, account_id=None):
+        f_data = self._data(account_id=account_id)
+
+        return self._create(values, f_data=f_data).json
+
+    def list(self, account_id=None):
+        f_data = self._data(account_id=account_id)
+        return self._list(f_data=f_data).json
+
+    def get(self, subscription_id, account_id=None):
+        f_data = self._data(account_id=account_id,
+                            subscription_id=subscription_id)
+        return self._get(f_data=f_data).json
+
+    def update(self, subscription_id, values, account_id=None):
+        f_data = self._data(account_id=account_id,
+                            subscription_id=subscription_id)
+
+        return self._update(values, f_data=f_data).json
+
+    def delete(self, subscription_id, account_id=None):
+        f_data = self._data(account_id=account_id,
+                            subscription_id=subscription_id)
+
+        return self._delete(f_data=f_data).json
+
+
+__all__ = [Account, Customer, PaymentMethod, Product, Plan, PlanItem,
+           Subscription]

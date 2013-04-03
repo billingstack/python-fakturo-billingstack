@@ -22,7 +22,7 @@ class CommandApi(object):
 
     @staticmethod
     def account_get_parser(parser):
-        parser.add_argument('--account-id', required=True)
+        parser.add_argument('id')
 
     def account_get(self, args, command):
         return self.client.account.get(account_id=args.id)
@@ -151,7 +151,6 @@ class CommandApi(object):
     @staticmethod
     def product_create_parser(parser):
         parser.add_argument('--account-id')
-        parser.add_argument('id')
         parser.add_argument('name')
         parser.add_argument('type')
         parser.add_argument('measure')
@@ -220,3 +219,154 @@ class CommandApi(object):
         Update a product
         """
         return self.client.product.delete(args.id, account_id=args.account_id)
+
+    # Subscription
+    @staticmethod
+    def subscription_create_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('plan_id')
+        parser.add_argument('customer_id')
+        parser.add_argument('payment_method_id')
+
+        parser.add_argument('--billing_day')
+        parser.add_argument('--resource_id')
+        parser.add_argument('--resource_type')
+
+    def subscription_create(self, args, command):
+        values = dict(
+            plan_id=args.plan_id,
+            customer_id=args.customer_id,
+            payment_method_id=args.payment_method_id,
+            billing_day=args.billing_day,
+            resource_id=args.resource_id,
+            resource_type=args.resource_type
+        )
+        return self.client.subscription.create(
+            values, account_id=args.account_id)
+
+    @staticmethod
+    def subscription_list_parser(parser):
+        parser.add_argument('--account-id')
+
+    def subscription_list(self, args, command):
+        return self.client.subscription.list(
+            account_id=args.account_id)
+
+    @staticmethod
+    def subscription_get_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('id')
+
+    def subscription_get(self, args, command):
+        """
+        Fetch a subscription
+        """
+        return self.client.subscription.get(
+            args.id, account_id=args.account_id)
+
+    @staticmethod
+    def subscription_update_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('id')
+        parser.add_argument('--billing_day')
+        parser.add_argument('--resource_id')
+        parser.add_argument('--resource_type')
+
+    def subscription_update(self, args, command):
+        """
+        Update a subscription
+        """
+        values = dict(
+            billing_day=args.billing_day,
+            resource_id=args.resource_id,
+            resource_type=args.resource_type,
+        )
+        return self.client.subscription.update(
+            args.id, values, account_id=args.account_id)
+
+    @staticmethod
+    def subscription_delete_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('id')
+
+    def subscription_delete(self, args, command):
+        """
+        Update a subscription
+        """
+        return self.client.subscription.delete(
+            args.id, account_id=args.account_id)
+
+    # PaymentMethod
+    @staticmethod
+    def payment_method_create_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('customer_id')
+        parser.add_argument('--name')
+        parser.add_argument('--identifier')
+        parser.add_argument('--expires')
+
+    def payment_method_create(self, args, command):
+        values = dict(
+            name=args.name,
+            identifier=args.identifier,
+            expires=args.expires
+        )
+
+        return self.client.payment_method.create(
+            args.customer_id, values, account_id=args.account_id)
+
+    @staticmethod
+    def payment_method_list_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('customer_id')
+
+    def payment_method_list(self, args, command):
+        return self.client.payment_method.list(
+            args.customer_id, account_id=args.account_id)
+
+    @staticmethod
+    def payment_method_get_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('customer-id')
+        parser.add_argument('id')
+
+    def payment_method_get(self, args, command):
+        """
+        Fetch a payment_method
+        """
+        return self.client.payment_method.get(
+            args.customer_id, args.id, account_id=args.account_id)
+
+    @staticmethod
+    def payment_method_update_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('customer-id')
+        parser.add_argument('id')
+        parser.add_argument('--billing_day')
+        parser.add_argument('--resource_id')
+        parser.add_argument('--resource_type')
+
+    def payment_method_update(self, args, command):
+        """
+        Update a payment_method
+        """
+        values = dict(
+            billing_day=args.billing_day,
+            resource_id=args.resource_id,
+            resource_type=args.resource_type,
+        )
+        return self.client.payment_method.update(
+            args.id, values, account_id=args.account_id)
+
+    @staticmethod
+    def payment_method_delete_parser(parser):
+        parser.add_argument('--account-id')
+        parser.add_argument('customer-id')
+        parser.add_argument('id')
+
+    def payment_method_delete(self, args, command):
+        """
+        Update a payment_method
+        """
+        return self.client.payment_method.delete(
+            args.id, account_id=args.account_id)

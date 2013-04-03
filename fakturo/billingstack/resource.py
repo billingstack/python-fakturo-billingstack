@@ -102,7 +102,7 @@ class Base(resource.BaseResource):
         try:
             return f_url % f_data
         except KeyError:
-            msg = "Insufficient data to format URL: %s" % f_data
+            msg = "Data (%s) insufficient to format (%s)" % (f_url, f_data)
             raise exceptions.LocalError(msg)
 
     def wrap_request(self, func, url=None, f_url=None, f_data=None,
@@ -130,17 +130,17 @@ class Base(resource.BaseResource):
         :return: requests Response object
         :rtype: Response
         """
-        account_id = None
-        if f_data and f_data.get('account_id') is not None:
-            account_id = f_data['account_id']
-        elif self.client.account_id:
-            account_id = self.client.account_id
+        if isinstance(f_data, dict):
+            if not f_data.get('account_id') and self.client.account_id:
+                f_data['account_id'] = self.client.account_id
+            f_data['merchant_id'] = f_data['account_id']
+
+        if f_data and 'account_id' in f_data:
+            f_data['merchant_id'] = f_data.get('account_id')
 
         # NOTE: URL takes precedense over f_url
-        if not url and (f_url and f_data):
+        if not url and f_url:
             # NOTE: Can this be changed?
-            if account_id:
-                f_data['merchant_id'] = account_id
             url = self._format_url(f_url, **f_data)
         elif not url:
             msg = 'No URL or URL Format String was passed'

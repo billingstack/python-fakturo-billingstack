@@ -441,4 +441,4 @@ class Usage(Base):
 
 
 __all__ = [Account, Customer, PaymentMethod, Product, Plan, PlanItem,
-           Subscription]
+           Subscription, Usage]

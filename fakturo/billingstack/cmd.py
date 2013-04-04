@@ -301,6 +301,7 @@ class CommandApi(object):
     def payment_method_create_parser(parser):
         parser.add_argument('--account-id')
         parser.add_argument('customer_id')
+        parser.add_argument('customer_id')
         parser.add_argument('--name')
         parser.add_argument('--identifier')
         parser.add_argument('--expires')
@@ -327,7 +328,7 @@ class CommandApi(object):
     @staticmethod
     def payment_method_get_parser(parser):
         parser.add_argument('--account-id')
-        parser.add_argument('customer-id')
+        parser.add_argument('customer_id')
         parser.add_argument('id')
 
     def payment_method_get(self, args, command):
@@ -340,7 +341,7 @@ class CommandApi(object):
     @staticmethod
     def payment_method_update_parser(parser):
         parser.add_argument('--account-id')
-        parser.add_argument('customer-id')
+        parser.add_argument('customer_id')
         parser.add_argument('id')
         parser.add_argument('--billing_day')
         parser.add_argument('--resource_id')
@@ -361,7 +362,7 @@ class CommandApi(object):
     @staticmethod
     def payment_method_delete_parser(parser):
         parser.add_argument('--account-id')
-        parser.add_argument('customer-id')
+        parser.add_argument('customer_id')
         parser.add_argument('id')
 
     def payment_method_delete(self, args, command):
@@ -369,4 +370,4 @@ class CommandApi(object):
         Update a payment_method
         """
         return self.client.payment_method.delete(
-            args.id, account_id=args.account_id)
+            args.customer_id, args.id, account_id=args.account_id)

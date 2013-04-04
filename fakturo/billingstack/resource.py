@@ -28,7 +28,8 @@ class Base(resource.BaseResource):
         :rtype: string
         """
         if cls.resource_name:
-            part_id = '/' + '%(' + cls.resource_name[0:-1] + '_id)s'
+            part_name = re.sub('-', '_', cls.resource_name)[0:-1]
+            part_id = '/' + '%(' + part_name + '_id)s'
 
             return part_id if resource_exclude else '/' + \
                 cls.resource_name + part_id

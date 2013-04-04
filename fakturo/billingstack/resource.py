@@ -182,7 +182,7 @@ class Base(resource.BaseResource):
         """
         f_url = kw.pop('f_url', self.item_url)
         response = self.wrap_request(
-            self.client.update, f_url=f_url, data=json.dumps(values),
+            self.client.put, f_url=f_url, data=json.dumps(values),
             *args, **kw)
         return response
 

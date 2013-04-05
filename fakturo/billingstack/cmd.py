@@ -301,17 +301,19 @@ class CommandApi(object):
     def payment_method_create_parser(parser):
         parser.add_argument('--account-id')
         parser.add_argument('customer_id')
-        parser.add_argument('customer_id')
         parser.add_argument('--name')
         parser.add_argument('--identifier')
         parser.add_argument('--expires')
+        parser.add_argument('--configuration')
 
     def payment_method_create(self, args, command):
         values = dict(
             name=args.name,
             identifier=args.identifier,
-            expires=args.expires
+            expires=args.expires,
         )
+        if args.configuration:
+            values['provider_config_id'] = args.configuration
 
         return self.client.payment_method.create(
             args.customer_id, values, account_id=args.account_id)
